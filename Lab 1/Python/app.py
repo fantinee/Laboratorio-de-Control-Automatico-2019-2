@@ -44,7 +44,7 @@ app.layout = html.Div([
             # Status div
             html.Div([
                 html.H3('Status'),
-                html.Div(children='Status: disconnected'),
+                html.Div(children='Disconnected'),
                 html.Button(children='Connect'),
                 html.Button(children='Disconnect')
                 ]),
@@ -53,8 +53,7 @@ app.layout = html.Div([
 
             # Control mode div
             html.Div([
-                html.H3('Control'),
-                html.Label('Control mode'),
+                html.H3('Control Mode'),
                 dcc.RadioItems(
                     options=[
                         {'label': 'Manual', 'value': 'manual'},
