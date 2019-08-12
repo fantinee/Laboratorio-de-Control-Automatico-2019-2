@@ -20,98 +20,94 @@ app.layout = html.Div([
 
     html.Hr(),
 
-    # Graphs div
     html.Div([
-        html.H3('Graphs'),
-        html.Div(id='tank_1_text'),
-        dcc.Graph(id='tank_1'),
-        html.Div(id='tank_2_text'),
-        dcc.Graph(id='tank_2'),
-        html.Div(id='tank_3_text'),
-        dcc.Graph(id='tank_3'),
-        html.Div(id='tank_4_text'),
-        dcc.Graph(id='tank_4'),
-        html.Div(id='valve_1_text'),
-        dcc.Graph(id='valve_1'),
-        html.Div(id='valve_2_text'),
-        dcc.Graph(id='valve_2'),
-    ]),
-
-    html.Hr(),
-
-    # Settings div
-    html.Div([
-        # Status div
+        # Graphs div
         html.Div([
-            html.H3('Status'),
-            html.Div(children='Status: disconnected'),
-            html.Button(children='Connect'),
-            html.Button(children='Disconnect')
+            html.Div([
+                html.Div(id='tank_3_text'),
+                dcc.Graph(id='tank_3'),
+                html.Div(id='tank_1_text'),
+                dcc.Graph(id='tank_1'),
+                html.Div(id='valve_1_text'),
+                dcc.Graph(id='valve_1'),
+                html.Div(id='tank_4_text'),
+                dcc.Graph(id='tank_4'),
+                html.Div(id='tank_2_text'),
+                dcc.Graph(id='tank_2'),
+                html.Div(id='valve_2_text'),
+                dcc.Graph(id='valve_2')
+            ], style={'columnCount': 2})
+        ], className='nine columns'),
+
+        # Settings div
+        html.Div([
+            # Status div
+            html.Div([
+                html.H3('Status'),
+                html.Div(children='Status: disconnected'),
+                html.Button(children='Connect'),
+                html.Button(children='Disconnect')
+                ]),
+
+            html.Hr(),
+
+            # Control mode div
+            html.Div([
+                html.H3('Control'),
+                html.Label('Control mode'),
+                dcc.RadioItems(
+                    options=[
+                        {'label': 'Manual', 'value': 'manual'},
+                        {'label': 'Automatic', 'value': 'automatic'},
+                    ],
+                    value='manual'
+                )
             ]),
 
-        html.Hr(),
+            html.Hr(),
 
-        # Control mode div
-        html.Div([
-            html.H3('Control'),
-            html.Label('Control mode'),
-            dcc.RadioItems(
-                options=[
-                    {'label': 'Manual', 'value': 'manual'},
-                    {'label': 'Automatic', 'value': 'automatic'},
-                ],
-                value='manual'
-            )
-        ]),
+            # Manual mode div
+            html.Div([
+                html.H3('Manual Control'),
+                html.Label('Valve 1'),
+                dcc.Input(value=0, type='number'),
+                html.Label('Valve 2'),
+                dcc.Input(value=0, type='number')
+            ]),
 
-        html.Hr(),
+            html.Hr(),
 
-        # Manual mode div
-        html.Div([
-            html.H2('Manual Control'),
-            html.Label('Valve 1'),
-            dcc.Input(value=0, type='number'),
-            html.Label('Valve 2'),
-            dcc.Input(value=0, type='number')
-        ]),
+            # Automatic mode div
+            html.Div([
+                html.H3('Automatic Control'),
+                html.Label('Reference 1'),
+                dcc.Input(value=0, type='number'),
+                html.Label('Reference 2'),
+                dcc.Input(value=0, type='number'),
+                html.Label('Proportional gain'),
+                dcc.Input(value=0, type='number'),
+                html.Label('Integral gain'),
+                dcc.Input(value=0, type='number'),
+                html.Label('Derivative gain'),
+                dcc.Input(value=0, type='number'),
+                html.Label('Wind up limit'),
+                dcc.Input(value=0, type='number'),
+                html.Label('Derivative filter'),
+                dcc.Input(value=0, type='number')
+            ]),
 
-        html.Hr(),
+            html.Hr(),
 
-        # Automatic mode div
-        html.Div([
-            html.H2('Automatic Control'),
-            html.Label('Reference 1'),
-            dcc.Input(value=0, type='number'),
-            html.Label('Reference 2'),
-            dcc.Input(value=0, type='number'),
-            html.Label('Proportional gain'),
-            dcc.Input(value=0, type='number'),
-            html.Label('Integral gain'),
-            dcc.Input(value=0, type='number'),
-            html.Label('Derivative gain'),
-            dcc.Input(value=0, type='number'),
-            html.Label('Wind up limit'),
-            dcc.Input(value=0, type='number'),
-            html.Label('Derivative filter'),
-            dcc.Input(value=0, type='number')
-        ]),
-
-        html.Hr(),
-
-        # Logging div
-        html.Div([
-            html.H3('Logging'),
-            html.Div(children='Status: not logging'),
-            html.Button(children='Begin'),
-            html.Button(children='Stop'),
-            html.Label('Filename'),
-            dcc.Input(value='log.csv', type='text')
-        ]),
-    ]),
-
-    # Graphs div
-    html.Div([
-        html.Div(id='live-update-text')
+            # Logging div
+            html.Div([
+                html.H3('Logging'),
+                html.Div(children='Status: not logging'),
+                html.Button(children='Begin'),
+                html.Button(children='Stop'),
+                html.Label('Filename'),
+                dcc.Input(value='log.csv', type='text')
+            ]),
+        ], className='three columns')
     ]),
 
     # 100 millisecond timer
