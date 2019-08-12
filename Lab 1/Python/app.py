@@ -2,11 +2,13 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
+import plotly.graph_objs as go
+import pandas as pd
 
-from communicator import CommunicatorFake
+from tank_system import TankSystem, TankSystemFake
 
-communicator = CommunicatorFake()
-communicator.connect()
+tank_system = TankSystem()
+tank_system.connect()
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -25,17 +27,19 @@ app.layout = html.Div([
         html.Div([
             html.Div([
                 html.Div(id='tank_3_text'),
-                dcc.Graph(id='tank_3'),
+                dcc.Graph(id='tank_3_graph'),
                 html.Div(id='tank_1_text'),
-                dcc.Graph(id='tank_1'),
+                dcc.Graph(id='tank_1_graph'),
+                html.Hr(),
                 html.Div(id='valve_1_text'),
-                dcc.Graph(id='valve_1'),
+                dcc.Graph(id='valve_1_graph'),
                 html.Div(id='tank_4_text'),
-                dcc.Graph(id='tank_4'),
+                dcc.Graph(id='tank_4_graph'),
                 html.Div(id='tank_2_text'),
-                dcc.Graph(id='tank_2'),
+                dcc.Graph(id='tank_2_graph'),
+                html.Hr(),
                 html.Div(id='valve_2_text'),
-                dcc.Graph(id='valve_2')
+                dcc.Graph(id='valve_2_graph')
             ], style={'columnCount': 2})
         ], className='nine columns'),
 
@@ -130,14 +134,45 @@ def update_metrics(n):
                Output('valve_2_text', 'children')
                ],
               [Input('interval_component', 'n_intervals')])
-def update_tank_1_text(n):
-    return ['Tank 1: {}'.format(communicator.tank_1),
-            'Tank 2: {}'.format(communicator.tank_2),
-            'Tank 3: {}'.format(communicator.tank_3),
-            'Tank 4: {}'.format(communicator.tank_4),
-            'Valve 1: {}'.format(communicator.valve_1),
-            'Valve 2: {}'.format(communicator.valve_2),
+
+def update_tanks_text(n):
+    return ['Tank 1: {}'.format(tank_system.tank_1),
+            'Tank 2: {}'.format(tank_system.tank_2),
+            'Tank 3: {}'.format(tank_system.tank_3),
+            'Tank 4: {}'.format(tank_system.tank_4),
+            'Valve 1: {}'.format(tank_system.valve_1),
+            'Valve 2: {}'.format(tank_system.valve_2),
             ]
+
+# @app.callback([Output('tank_1_graph', 'figure'),
+#                Output('tank_2_graph', 'figure'),
+#                Output('tank_3_graph', 'figure'),
+#                Output('tank_4_graph', 'figure'),
+#                ],
+#               [Input('interval_component', 'n_intervals')])
+# def update_graphs(n):
+#     return [{'data': [{'x': [1], 'y': [tank_system.tank_1], 'type': 'bar'}],
+#             'layout': go.Layout(
+#                 yaxis={'range': [0, 50]}
+#             )},
+#             {'data': [{'x': [1], 'y': [tank_system.tank_2], 'type': 'bar'}],
+#              'layout': go.Layout(
+#                  yaxis={'range': [0, 50]}
+#              )},
+#             {'data': [{'x': [1], 'y': [tank_system.tank_3], 'type': 'bar'}],
+#              'layout': go.Layout(
+#                  yaxis={'range': [0, 50]}
+#              )},
+#             {'data': [{'x': [1], 'y': [tank_system.tank_4], 'type': 'bar'}],
+#              'layout': go.Layout(
+#                  yaxis={'range': [0, 50]}
+#              )}
+#             ]
+
+# @app.callback(Output('tank_4_graph', 'figure'),
+#               [Input('interval_component', 'n_intervals')])
+# def update_graphs(n):
+#     return go.Figure(data=[1, 2, 3])
 
 
 if __name__ == '__main__':
