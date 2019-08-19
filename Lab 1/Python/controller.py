@@ -14,6 +14,7 @@ class Controller:
         self.k_d = 0
         self.windup = 0
         self.d_filter = 0
+        self.last_d = 0
 
         self.error_sum = 0
         self.error_last = 0
@@ -30,7 +31,9 @@ class Controller:
         u_i = self.k_i * self.error_sum * 0.1
 
         # Derivative
-        u_d = self.k_d * (error - self.error_last) / 0.1
+        u_d = k_d * ((1-self.d_filter)*(self.last_d) + self.d_filter*(error - self.error_last)) / 0.1
+        self.last_d = u_d
+        # u_d = self.k_d * (error - self.error_last) / 0.1
         self.error_last = error
 
         u = u_p + u_i + u_d
