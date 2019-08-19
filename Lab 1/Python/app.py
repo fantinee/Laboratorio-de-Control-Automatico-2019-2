@@ -167,6 +167,7 @@ app.layout = html.Div([
 @app.callback(Output('time_text', 'children'),
               [Input('graph_interval', 'n_intervals')])
 def update_test_text(n):
+    print(tank_system.sub_handler.tanks_alarms)
     return '{} seconds have passed.'.format(n)
 
 
@@ -180,12 +181,26 @@ def update_test_text(n):
               [Input('graph_interval', 'n_intervals')])
 def update_tanks_text(n):
     if tank_system.connected:
-        return ['Tank 1: {:.2f}'.format(tank_system.past_values['tank_1'][-1]),
-                'Tank 2: {:.2f}'.format(tank_system.past_values['tank_2'][-1]),
-                'Tank 3: {:.2f}'.format(tank_system.past_values['tank_3'][-1]),
-                'Tank 4: {:.2f}'.format(tank_system.past_values['tank_4'][-1]),
-                'Valve 1: {:.2f}'.format(tank_system.past_values['valve_1'][-1]),
-                'Valve 2: {:.2f}'.format(tank_system.past_values['valve_2'][-1]),
+        return ['Tank 1: {:.2f}{}'.format(
+                    tank_system.past_values['tank_1'][-1],
+                    ' (ALARM)' if tank_system.sub_handler.tanks_alarms[1]
+                    else ''),
+                'Tank 2: {:.2f}{}'.format(
+                    tank_system.past_values['tank_2'][-1],
+                    ' (ALARM)' if tank_system.sub_handler.tanks_alarms[2]
+                    else ''),
+                'Tank 3: {:.2f}{}'.format(
+                    tank_system.past_values['tank_3'][-1],
+                    ' (ALARM)' if tank_system.sub_handler.tanks_alarms[3]
+                    else ''),
+                'Tank 4: {:.2f}{}'.format(
+                    tank_system.past_values['tank_4'][-1],
+                    ' (ALARM)' if tank_system.sub_handler.tanks_alarms[4]
+                    else ''),
+                'Valve 1: {:.2f}'.format(
+                    tank_system.past_values['valve_1'][-1]),
+                'Valve 2: {:.2f}'.format(
+                    tank_system.past_values['valve_2'][-1]),
                 ]
     else:
         return ['Tank 1: Not connected',
@@ -392,9 +407,16 @@ def logger():
   threading.Timer(0.1, logger).start()
   tank_system.log_values()
 
+
+def alarm_resetter():
+    threading.Timer(5, alarm_resetter).start()
+    tank_system.sub_handler.tanks_alarms = {1: False, 2: False, 3: False,
+                                            4: False}
+
 if __name__ == '__main__':
     tank_system = TankSystem()
     logger()
+    alarm_resetter()
     controller = Controller()
 
     try:

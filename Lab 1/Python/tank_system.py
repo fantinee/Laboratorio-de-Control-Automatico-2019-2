@@ -3,11 +3,32 @@ import time
 import collections
 
 
+class SubHandler(object):
+    # https://github.com/FreeOpcUa/python-opcua/blob/master/examples/client-events.py
+
+    """
+    Subscription Handler. To receive events from server for a subscription
+    data_change and event methods are called directly from receiving thread.
+    Do not do expensive, slow or network operation there. Create another
+    thread if you need to do such a thing
+    """
+    def __init__(self):
+        super()
+        self.tanks_alarms = {1: False, 2: False, 3: False, 4: False}
+
+    def event_notification(self, event):
+        tank_num = int(event.Mensaje[17])
+        self.tanks_alarms[tank_num] = True
+
+
+
 class TankSystem:
     def __init__(self):
         self.client = None
         self.objects_node = None
+        self.root_node = None
         self.connected = False
+        self.sub_handler = SubHandler()
 
         self.max_size = 600
         self.past_values = {'time': collections.deque(maxlen=self.max_size),
@@ -31,6 +52,21 @@ class TankSystem:
             self.objects_node = self.client.get_objects_node()
             self.connected = True
             self.log_values()
+
+            self.root_node = self.client.get_root_node()
+            myevent = self.root_node.get_child(
+                ['0:Types', '0:EventTypes', '0:BaseEventType',
+                 '2:Alarma_nivel'])
+
+            obj = self.objects_node.get_child([
+                '2:Proceso_Tanques', '2:Alarmas', '2:Alarma_nivel'])
+
+            sub = self.client.create_subscription(100, self.sub_handler)
+            handle = sub.subscribe_events(obj, myevent)
+
+            # sub.unsubscribe(handle)
+            # sub.delete()
+
 
     def disconnect(self):
         if self.connected:
