@@ -8,7 +8,7 @@ class Control:
     self.windup = windup
     self.dfilter = dfilter
     self.ref = ref
-    self.old_data = []
+    self.last_error = 0
     self.readings = 0
 
   def PID(self, h):
@@ -21,12 +21,13 @@ class Control:
     # INTEGRAL
     integral = ki*(integral + error)
     if(integral > windup):
-      integral = windup1
-    elif(integral < 0):
-      integral = 0
+      integral = windup
+    elif(integral < -windup):
+      integral = -windup
 
     # DERIVATIVE
-    derivative = kd*self.derivative_control(h)
+    derivative = kd*(self.error - self.last_error)
+    self.last_error = error
 
     # U1
     u = proporcional + integral + derivative
@@ -38,12 +39,12 @@ class Control:
 
     return u
 
-  def derivative_control(self,h):
+  def derivative_control(self, h):
     if (len(self.readings) < self.dfilter):
       self.readings.append(h)
       return mean(self.readings)
     else:
-      v = mean(self.readings + [self.h])
+      v = mean(self.readings + [h])
       self.readings.pop()
       self.readings.insert(0, v)
       return v
