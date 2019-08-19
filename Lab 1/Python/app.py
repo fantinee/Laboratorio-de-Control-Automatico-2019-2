@@ -6,6 +6,7 @@ import plotly.graph_objs as go
 import threading
 import pandas
 from dash.exceptions import PreventUpdate
+import time
 
 from tank_system import TankSystem
 from controller import Controller
@@ -167,7 +168,7 @@ app.layout = html.Div([
 @app.callback(Output('time_text', 'children'),
               [Input('graph_interval', 'n_intervals')])
 def update_test_text(n):
-    print(tank_system.sub_handler.tanks_alarms)
+    #print(tank_system.sub_handler.tanks_alarms)
     return '{} seconds have passed.'.format(n)
 
 
@@ -180,7 +181,7 @@ def update_test_text(n):
                ],
               [Input('graph_interval', 'n_intervals')])
 def update_tanks_text(n):
-    if tank_system.connected:
+    if tank_system.connected and all(tank_system.past_values.values()):
         return ['Tank 1: {:.2f}{}'.format(
                     tank_system.past_values['tank_1'][-1],
                     ' (ALARM)' if tank_system.sub_handler.tanks_alarms[1]
@@ -270,17 +271,20 @@ def status_items(value):
 def control_mode_items(value):
     if value == 'manual':
         print('Manual mode activated')
-        controller.activated = False
+        controllers[0].active = False
+        controllers[1].active = False
     elif value == 'automatic':
         print('Automatic mode activated')
-        controller.activated = True
+        controllers[0].active = True
+        controllers[1].active = True
     raise PreventUpdate
 
 
 @app.callback(Output('valve_1_input', 'style'),
               [Input('valve_1_input', 'value')])
 def valve_1_input(value):
-    if not controller.activated and tank_system.connected and value is not None:
+    if not controllers[0].active and tank_system.connected and value is not \
+            None:
         print('Valve 1 set to {}'.format(value))
         tank_system.valve_1 = value
     raise PreventUpdate
@@ -289,7 +293,8 @@ def valve_1_input(value):
 @app.callback(Output('valve_2_input', 'style'),
               [Input('valve_2_input', 'value')])
 def valve_2_input(value):
-    if not controller.activated and tank_system.connected and value is not None:
+    if not controllers[1].active and tank_system.connected and value is not \
+            None:
         print('Valve 2 set to {}'.format(value))
         tank_system.valve_2 = value
     raise PreventUpdate
@@ -300,7 +305,7 @@ def valve_2_input(value):
 def ref_1_input(value):
     if value is not None:
         print('Reference 1 set to {}'.format(value))
-        controller.ref_1 = value
+        controllers[0].ref = value
     raise PreventUpdate
 
 
@@ -309,7 +314,7 @@ def ref_1_input(value):
 def kp_1_input(value):
     if value is not None:
         print('Proportional constant 1 set to {}'.format(value))
-        controller.kp_1 = value
+        controllers[0].k_p = value
     raise PreventUpdate
 
 
@@ -318,7 +323,7 @@ def kp_1_input(value):
 def ki_1_input(value):
     if value is not None:
         print('Integral constant 1 set to {}'.format(value))
-        controller.ki_1 = value
+        controllers[0].k_i = value
     raise PreventUpdate
 
 
@@ -327,7 +332,7 @@ def ki_1_input(value):
 def kd_1_input(value):
     if value is not None:
         print('Derivative constant 1 set to {}'.format(value))
-        controller.kd_1 = value
+        controllers[0].k_d = value
     raise PreventUpdate
 
 
@@ -336,7 +341,7 @@ def kd_1_input(value):
 def windup_1_input(value):
     if value is not None:
         print('Windup limit 1 set to {}'.format(value))
-        controller.windup_1 = value
+        controllers[0].windup = value
     raise PreventUpdate
 
 
@@ -345,7 +350,7 @@ def windup_1_input(value):
 def d_filter_1_input(value):
     if value is not None:
         print('Derivative filter 1 set to {}'.format(value))
-        controller.d_filter_1 = value
+        controllers[0].d_filter = value
     raise PreventUpdate
 
 
@@ -354,7 +359,7 @@ def d_filter_1_input(value):
 def ref_2_input(value):
     if value is not None:
         print('Reference 2 set to {}'.format(value))
-        controller.ref_2 = value
+        controllers[1].ref = value
     raise PreventUpdate
 
 
@@ -363,7 +368,7 @@ def ref_2_input(value):
 def kp_2_input(value):
     if value is not None:
         print('Proportional constant 2 set to {}'.format(value))
-        controller.kp_2 = value
+        controllers[1].k_p = value
     raise PreventUpdate
 
 
@@ -372,7 +377,7 @@ def kp_2_input(value):
 def ki_2_input(value):
     if value is not None:
         print('Integral constant 2 set to {}'.format(value))
-        controller.ki_2 = value
+        controllers[1].k_i = value
     raise PreventUpdate
 
 
@@ -381,7 +386,7 @@ def ki_2_input(value):
 def kd_2_input(value):
     if value is not None:
         print('Derivative constant 2 set to {}'.format(value))
-        controller.kd_2 = value
+        controllers[1].k_d = value
     raise PreventUpdate
 
 
@@ -390,7 +395,7 @@ def kd_2_input(value):
 def windup_2_input(value):
     if value is not None:
         print('Windup limit 2 set to {}'.format(value))
-        controller.windup_2 = value
+        controllers[1].windup = value
     raise PreventUpdate
 
 
@@ -399,13 +404,24 @@ def windup_2_input(value):
 def d_filter_2_input(value):
     if value is not None:
         print('Derivative filter 2 set to {}'.format(value))
-        controller.d_filter_2 = value
+        controllers[1].d_filter = value
     raise PreventUpdate
 
 
 def logger():
-  threading.Timer(0.1, logger).start()
-  tank_system.log_values()
+    global last_time
+    threading.Timer(0.1, logger).start()
+
+    tank_system.log_values()
+
+    if (tank_system.connected and controllers[0].active
+        and controllers[1].active):
+        time_dif = time.time() - last_time
+        last_time = time.time()
+        tank_system.valve_1 = controllers[0].pid_control(
+            tank_system.past_values['tank_1'][-1], time_dif)
+        tank_system.valve_2 = controllers[1].pid_control(
+            tank_system.past_values['tank_2'][-1], time_dif)
 
 
 def alarm_resetter():
@@ -415,13 +431,11 @@ def alarm_resetter():
 
 if __name__ == '__main__':
     tank_system = TankSystem()
+    controllers = [Controller(1), Controller(2)]
+    last_time = time.time()
+
+
     logger()
     alarm_resetter()
-    controller = Controller()
 
-    try:
-        app.run_server(debug=True)
-    except:
-        pass
-    finally:
-        tank_system.disconnect()
+    app.run_server(debug=True)

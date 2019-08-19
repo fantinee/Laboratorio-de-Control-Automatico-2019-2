@@ -13,7 +13,7 @@ class Control:
 
   def PID(self, h):
 
-    error = ref - h
+    error = self.ref - h
 
     # PROPORTIONAL
     proporcional = kp*error
