@@ -1,0 +1,16 @@
+% Repetir una PRBS 20 veces
+prbs_N = (2^12)-1;
+u = prbs15(prbs_N, [1 1 0 0 1 0 1 0 1 1 1 0 1 0 0]);
+u_20 = repmat(u, 1, 20);
+
+% Simular Planta con entrada u_20
+Ts = 0.005;           
+tfinal = 0.005*;
+t = (0:Ts:tfinal)';
+npts = length(t);
+u_in = [t, u_20];
+[t_out, x, y] = sim('Planta', tfinal, [], u_in);
+
+
+
+
