@@ -31,8 +31,9 @@ class Controller:
         u_i = self.k_i * self.error_sum * 0.1
 
         # Derivative
-        u_d = k_d * ((1-self.d_filter)*(self.last_d) + self.d_filter*(error - self.error_last)) / 0.1
-        self.last_d = u_d
+        error_d = ((1 - self.d_filter) * self.last_d + self.d_filter * (error - self.error_last))
+        u_d = self.k_d * error_d / 0.1
+        self.last_d = error_d
         # u_d = self.k_d * (error - self.error_last) / 0.1
         self.error_last = error
 
