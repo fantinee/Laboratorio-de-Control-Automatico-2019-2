@@ -49,10 +49,10 @@ xlabel('t')
 ylabel('Magnitud')
 
 % DFT y Ploteo
-dft = dft(autocorr);
+dft_signal = dft(autocorr);
 figure
 grid on
-plot(t_filtered, dft)
+plot(t_filtered, dft_signal)
 title('DFT')
 xlabel('t')
 ylabel('Magnitud')

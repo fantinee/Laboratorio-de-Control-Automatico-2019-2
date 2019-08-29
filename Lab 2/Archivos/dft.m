@@ -6,7 +6,7 @@ function [out] = dft (vector) % periodo unitario
         for n = 1: N 
             ExpCoefs(n)=exp(-j*2*pi*((-N/2)+n-1)*((-N/2)+k-1)/N);
         end  
-        Kcoefs(k) = sum(vector.*ExpCoefs)/N;
+        Kcoefs(k) = abs(sum(vector.*ExpCoefs)/N);
     end
     out = Kcoefs;
 end
